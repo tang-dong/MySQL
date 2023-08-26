@@ -235,3 +235,295 @@ FROM table1, table2
 WHERE table1.column1 = table2.column2; -- 连接条件
 ```
 ![img_42.png](img_42.png)
+
+### 2.多表查询的分类讲解
+#### 分类1：等值连接 vs 非等值连接
+##### 等值连接
+![img_43.png](img_43.png)
+```sql
+SELECT
+	employees.employee_id,
+	employees.last_name,
+	employees.department_id,
+	departments.department_id,
+	departments.location_id 
+FROM
+	employees,departments 
+WHERE employees.department_id = departments.department_id;
+```
+![img_44.png](img_44.png)
+![img_45.png](img_45.png)
+![img_46.png](img_46.png)
+![img_47.png](img_47.png)
+![img_48.png](img_48.png)
+![img_49.png](img_49.png)
+```sql
+-- 练习：查询出公司员工的 last_name,department_name, city
+SELECT e.last_name,d.department_name,l.city
+FROM employees e,departments d,locations l
+WHERE e.department_id = d.department_id AND d.location_id = l.location_id;
+```
+![img_50.png](img_50.png)
+
+#### 非等值连接
+![img_51.png](img_51.png)
+```sql
+SELECT e.last_name,e.salary,j.grade_level
+FROM employees e,job_grades j
+WHERE e.salary BETWEEN j.lowest_sal AND j.highest_sal;
+```
+![img_52.png](img_52.png)
+#### 分类2：自连接 vs 非自连接
+![img_53.png](img_53.png)
+题目：查询employees表，返回“Xxx works for Xxx”
+```sql
+SELECT CONCAT(worker.last_name,' worker for ',manager.last_name)
+FROM employees worker, employees manager
+WHERE worker.manager_id = manager.employee_id;
+```
+![img_54.png](img_54.png)
+```sql
+-- 练习：查询出last_name为 ‘Chen’ 的员工的 manager 的信息。
+SELECT e.employee_id,e.first_name,e.last_name,d.department_id,d.department_name,e.salary,l.city
+FROM employees e,departments d,locations l
+WHERE e.department_id = d.department_id AND d.location_id = l.location_id AND e.last_name LIKE 'Chen';
+```
+![img_55.png](img_55.png)
+
+#### 分类3：内连接 vs 外连接
+除了查询满足条件的记录以外，外连接还可以查询某一方不满足条件的记录。
+![img_56.png](img_56.png)
+![img_57.png](img_57.png)
+
+### 3.SQL99语法实现多表查询
+#### 3.1 基本语法
++ 使用 JOIN...ON子句创建连接的语法结构
+```sql
+SELECT table1.column, table2.column,table3.column
+FROM table1
+    JOIN table2 ON table1 和 table2 的连接条件
+        JOIN table3 ON table2 和 table3 的连接条件
+```
+它的嵌套逻辑类似我们使用的 FOR 循环：
+```java
+for t1 in table1:
+    for t2 in table2:
+        if condition1:
+            for t3 in table3:
+                if condition2:
+                    output t1 + t2 + t3
+```
+SQL99 采用的这种嵌套结构非常清爽、层次性更强、可读性更强，即使再多的表进行连接也都清晰可见。如果你采用 SQL92，可读性就会大打折扣。
+![img_58.png](img_58.png)
+
+#### 3.2 内连接(INNER JOIN)的实现
+![img_59.png](img_59.png)
+```sql
+SELECT e.employee_id, e.last_name, e.department_id, d.department_id, d.location_id
+FROM employees e JOIN departments d
+ON (e.department_id = d.department_id);
+```
+![img_60.png](img_60.png)
+```sql
+SELECT employee_id, city, department_name
+FROM employees e
+JOIN departments d
+ON d.department_id = e.department_id
+JOIN locations l
+ON d.location_id = l.location_id;
+```
+![img_61.png](img_61.png)
+
+#### 3.3 外连接(OUTER JOIN)的实现
+##### 3.3.1 左外连接(LEFT OUTER JOIN)
+![img_62.png](img_62.png)
+```sql
+SELECT e.last_name, e.department_id, d.department_name
+FROM employees e
+LEFT OUTER JOIN departments d
+ON (e.department_id = d.department_id);
+```
+![img_64.png](img_64.png)
+
+##### 3.3.2 右外连接(RIGHT OUTER JOIN)
+![img_65.png](img_65.png)
+```sql
+-- 右外连接
+SELECT e.last_name, e.department_id, d.department_name
+FROM employees e
+RIGHT OUTER JOIN departments d
+ON (e.department_id = d.department_id);
+```
+![img_66.png](img_66.png)
+![img_67.png](img_67.png)
+
+### 4. UNION的使用
+![img_68.png](img_68.png)
+![img_69.png](img_69.png)
+![img_70.png](img_70.png)
+![img_71.png](img_71.png)
+
+### 5. 7种SQL JOINS的实现
+![img_72.png](img_72.png)
+#### 5.7.1 代码实现
+```sql
+-- 中图：内连接 A∩B
+SELECT employee_id,last_name,department_name
+FROM employees e JOIN departments d
+ON e.`department_id` = d.`department_id`;
+```
+```sql
+-- 左上图：左外连接
+SELECT employee_id,last_name,department_name
+FROM employees e LEFT JOIN departments d
+ON e.`department_id` = d.`department_id`;
+```
+```sql
+-- 右上图：右外连接
+SELECT employee_id,last_name,department_name
+FROM employees e RIGHT JOIN departments d
+ON e.`department_id` = d.`department_id`;
+```
+```sql
+-- 左中图：A - A∩B
+SELECT employee_id,last_name,department_name
+FROM employees e LEFT JOIN departments d
+ON e.`department_id` = d.`department_id`
+WHERE d.`department_id` IS NULL
+```
+```sql
+-- 右中图：B-A∩B
+SELECT employee_id,last_name,department_name
+FROM employees e RIGHT JOIN departments d
+ON e.`department_id` = d.`department_id`
+WHERE e.`department_id` IS NULL
+```
+```sql
+-- 左下图：满外连接
+-- 左中图 + 右上图 A∪B
+SELECT employee_id,last_name,department_name
+FROM employees e LEFT JOIN departments d
+ON e.`department_id` = d.`department_id`
+WHERE d.`department_id` IS NULL
+UNION ALL -- 没有去重操作，效率高
+SELECT employee_id,last_name,department_name
+FROM employees e RIGHT JOIN departments d
+ON e.`department_id` = d.`department_id`;
+```
+```sql
+-- 右下图
+-- 左中图 + 右中图 A ∪B- A∩B 或者 (A - A∩B) ∪ （B - A∩B）
+SELECT employee_id,last_name,department_name
+FROM employees e LEFT JOIN departments d
+ON e.`department_id` = d.`department_id`
+WHERE d.`department_id` IS NULL
+UNION ALL
+SELECT employee_id,last_name,department_name
+FROM employees e RIGHT JOIN departments d
+ON e.`department_id` = d.`department_id`
+WHERE e.`department_id` IS NULL
+```
+#### 5.7.2 语法格式小结
++ 左中图
+```sql
+-- 实现A - A∩B
+select 字段列表
+from A表 left join B表
+on 关联条件
+where 从表关联字段 is null and 等其他子句;
+```
++ 右中图
+```sql
+-- 实现B - A∩B
+select 字段列表
+from A表 right join B表
+on 关联条件
+where 从表关联字段 is null and 等其他子句;
+```
++ 左下图
+```sql
+-- 实现查询结果是A∪B
+-- 用左外的A，union 右外的B
+select 字段列表
+from A表 left join B表
+on 关联条件
+where 等其他子句
+union
+select 字段列表
+from A表 right join B表
+on 关联条件
+where 等其他子句;
+```
++ 右下图
+```sql
+-- 实现A∪B - A∩B 或 (A - A∩B) ∪ （B - A∩B）
+-- 使用左外的 (A - A∩B) union 右外的（B - A∩B）
+select 字段列表
+from A表 left join B表
+on 关联条件
+where 从表关联字段 is null and 等其他子句
+union
+select 字段列表
+from A表 right join B表
+on 关联条件
+where 从表关联字段 is null and 等其他子句
+```
+
+### 6.SQL99语法新特性
+#### 6.1 自然连接
+![img_73.png](img_73.png)
+#### 6.2 USING连接
+![img_74.png](img_74.png)
+
+## 9.函数
+### 1.数值函数
+#### 1.1 基本函数
+![img_75.png](img_75.png)
+```sql
+SELECT
+ABS(-123),ABS(32),SIGN(-23),SIGN(43),PI(),CEIL(32.32),CEILING(-43.23),FLOOR(32.32),
+FLOOR(-43.23),MOD(12,5)
+FROM DUAL;
+```
+![img_76.png](img_76.png)
+```sql
+SELECT RAND(),RAND(),RAND(10),RAND(10),RAND(-1),RAND(-1)
+FROM DUAL;
+```
+![img_77.png](img_77.png)
+```sql
+SELECT
+ROUND(12.33),ROUND(12.343,2),ROUND(12.324,-1),TRUNCATE(12.66,1),TRUNCATE(12.66,-1)
+FROM DUAL;
+```
+![img_78.png](img_78.png)
+
+#### 1.2 角度与弧度互换函数
+![img_79.png](img_79.png)
+```sql
+SELECT RADIANS(30),RADIANS(60),RADIANS(90),DEGREES(2*PI()),DEGREES(RADIANS(90))
+FROM DUAL;
+```
+![img_80.png](img_80.png)
+
+#### 1.3 三角函数
+![img_81.png](img_81.png)
+
+#### 1.4 指数和对数
+![img_82.png](img_82.png)
+
+#### 1.5 进制转换
+![img_83.png](img_83.png)
+
+### 2 字符串函数
+![img_84.png](img_84.png)
+
+### 3.日期和时间函数
+#### 3.1 获取日期、时间
+![img_85.png](img_85.png)
+
+#### 3.2 日期与时间戳的转换
+![img_86.png](img_86.png)
+
+#### 3.3 获取月份、星期、星期数、天数等函数
+![img_87.png](img_87.png)
