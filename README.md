@@ -659,3 +659,284 @@ HAVING MAX(salary)>10000 ;
 ##### 2.3.2 WHERE和HAVING的对比
 ![img_110.png](img_110.png)
 ![img_111.png](img_111.png)
+![img_112.png](img_112.png)
+
+## 10.SELECT的执行过程
+### 10.1 查询的结构
+```sql
+-- 方式1：
+SELECT ...,....,...
+FROM ...,...,....
+WHERE 多表的连接条件
+AND 不包含组函数的过滤条件
+GROUP BY ...,...
+HAVING 包含组函数的过滤条件
+ORDER BY ... ASC/DESC
+LIMIT ...,...;
+
+
+-- 方式2：
+SELECT ...,....,...
+FROM ... JOIN ...
+ON 多表的连接条件
+JOIN ...
+ON ...
+WHERE 不包含组函数的过滤条件
+AND/OR 不包含组函数的过滤条件
+GROUP BY ...,...
+HAVING 包含组函数的过滤条件
+ORDER BY ... ASC/DESC
+LIMIT ...,...
+
+-- 其中：
+-- （1）from：从哪些表中筛选
+-- （2）on：关联多表查询时，去除笛卡尔积
+-- （3）where：从表中筛选的条件
+-- （4）group by：分组依据
+-- （5）having：在统计结果中再次筛选
+-- （6）order by：排序
+-- （7）limit：分页
+```
+
+### 10.2 SELECT执行顺序
+![img_113.png](img_113.png)
+![img_114.png](img_114.png)
+
+## 11.子查询
+### 11.1 需求分析与问题解决
+#### 11.1.1 实际问题
+![img_115.png](img_115.png)
+现有的解决方式：
+```sql
+-- 方式一：
+SELECT salary
+FROM employees
+WHERE last_name = 'Abel';
+
+SELECT last_name,salary
+FROM employees
+WHERE salary > 11000;
+
+-- 方式二：自连接
+SELECT e2.last_name,e2.salary
+FROM employees e1,employees e2
+WHERE e1.last_name = 'Abel'
+AND e1.`salary` < e2.`salary`
+
+-- 方式三：子查询
+SELECT last_name,salary
+FROM employees
+WHERE salary > (
+    SELECT salary
+    FROM employees
+    WHERE last_name = 'Abel'
+);
+```
+![img_116.png](img_116.png)
+#### 11.1.2 子查询的基本使用
+![img_117.png](img_117.png)
+#### 11.1.3 子查询的分类
+![img_118.png](img_118.png)
+![img_119.png](img_119.png)
+
+### 11.2 单行子查询
+#### 11.2.1 单行比较操作符
+![img_120.png](img_120.png)
+
+#### 11.2.2 代码示例
+题目：查询工资大于149号员工工资的员工的信息
+```sql
+SELECT last_name
+FROM employees
+WHERE salary > (SELECT salary
+				FROM employees
+				WHERE employee_id = 149);
+```
+![img_121.png](img_121.png)
+题目：返回job_id与141号员工相同，salary比143号员工多的员工姓名，job_id和工资
+```sql
+SELECT last_name, job_id, salary
+FROM employees
+WHERE job_id = (SELECT job_id
+				FROM employees
+				WHERE employee_id = 141)
+AND   salary > (SELECT salary
+				FROM employees
+				WHERE employee_id = 143);
+```
+![img_122.png](img_122.png)
+题目：返回公司工资最少的员工的last_name,job_id和salary
+```sql
+SELECT last_name,job_id,salary
+FROM employees
+WHERE salary = (SELECT MIN(salary)
+				FROM employees);
+```
+![img_123.png](img_123.png)
+题目：查询与141号或174号员工的manager_id和department_id相同的其他员工的employee_id，manager_id，department_id
+实现方式1：不成对比较
+```sql
+SELECT employee_id,manager_id,department_id 
+FROM employees 
+WHERE manager_id IN (SELECT manager_id 
+					 FROM employees 
+					 WHERE employee_id IN ( 174, 141 )) 
+AND department_id IN (SELECT department_id 
+					  FROM employees 
+					  WHERE employee_id IN ( 174, 141 )) 
+AND employee_id NOT IN ( 174, 141 );
+```
+实现方式2：成对比较
+```sql
+SELECT employee_id,manager_id,department_id
+FROM employees
+WHERE (manager_id, department_id) IN
+					(SELECT manager_id,department_id
+					 FROM employees
+					 WHERE employee_id IN (141,174))
+AND employee_id NOT IN (141,174);
+```
+#### 11.2.3 HAVING中的子查询
+![img_124.png](img_124.png)
+
+#### 11.2.4 CASE中的子查询
+题目：显式员工的employee_id,last_name和location。其中，若员工department_id与location_id为1800的department_id相同，则location为’Canada’，其余则为’USA’。
+```sql
+SELECT employee_id,last_name,
+	 (CASE department_id
+	 WHEN (SELECT department_id
+		   FROM departments
+		   WHERE location_id = 1800) 		
+		   THEN 'Canada' ELSE 'USA' END) location
+FROM employees;
+```
+![img_125.png](img_125.png)
+
+#### 11.2.5 子查询的空值问题
+![img_126.png](img_126.png)
+
+#### 11.2.6 非法使用子查询
+![img_127.png](img_127.png)
+![img_128.png](img_128.png)
+
+### 11.3 多行子查询
+#### 11.3.1 多行比较操作符
+![img_129.png](img_129.png)
+![img_130.png](img_130.png)
+题目：返回其它job_id中比job_id为‘IT_PROG’部门所有工资都低的员工的员工号、姓名、job_id以及salary
+![img_131.png](img_131.png)
+题目：查询平均工资最低的部门id
+```sql
+-- 方式一：
+SELECT department_id
+FROM employees
+GROUP BY department_id
+HAVING AVG(salary) = (SELECT MIN(avg_sal)
+			FROM (
+				SELECT AVG(salary) avg_sal
+				FROM employees
+				GROUP BY department_id
+				) dept_avg_sal
+			)
+
+-- 方式二：
+SELECT department_id
+FROM employees
+GROUP BY department_id
+HAVING AVG(salary) <= ALL(
+			SELECT AVG(salary) avg_sal
+			FROM employees
+			GROUP BY department_id
+			)
+```
+
+#### 11.3.2 空值问题
+![img_132.png](img_132.png)
+
+
+### 11.4 相关子查询
+#### 11.4.1 相关子查询执行流程
+![img_133.png](img_133.png)
+![img_134.png](img_134.png)
+题目：查询员工中工资大于本部门平均工资的员工的last_name,salary和其department_id
+```sql
+-- 方式一：相关子查询
+SELECT last_name,salary,department_id
+FROM employees e
+WHERE salary > 
+			(SELECT AVG(salary)
+			 FROM employees
+			 WHERE department_id = e.department_id);
+```
+```sql
+-- 方式二：在from中使用子查询
+SELECT last_name,salary,e1.department_id
+FROM employees e1,(SELECT department_id,AVG(salary) dept_avg_sal
+									 FROM employees
+									 GROUP BY department_id) e2
+WHERE e1.department_id = e2.department_id
+AND e2.dept_avg_sal < e1.salary;
+```
+![img_135.png](img_135.png)
+在ORDER BY 中使用子查询：
+题目：查询员工的id,salary,按照department_name 排序
+```sql
+-- 题目：查询员工的id,salary,按照department_name 排序
+SELECT employee_id,salary
+FROM employees e
+ORDER BY (
+		SELECT department_name
+		FROM departments d
+		WHERE e.department_id = d.department_id
+);
+```
+题目：若employees表中employee_id与job_history表中employee_id相同的数目不小于2，输出这些相同id的员工的employee_id,last_name和其job_id
+```sql
+SELECT e.employee_id,last_name,e.job_id
+FROM employees e
+WHERE 2 <= (SELECT COUNT(*)
+            FROM job_history
+						WHERE employee_id = e.employee_id);
+```
+#### 11.4.2 EXISTS 与 NOT EXISTS关键字
+![img_136.png](img_136.png)
+题目：查询公司管理者的employee_id，last_name，job_id，department_id信息
+```sql
+-- 方式一：
+SELECT employee_id,last_name,job_id,department_id
+FROM employees e1
+WHERE EXISTS (SELECT *
+						  FROM employees e2
+							WHERE e2.manager_id = e1.employee_id);
+```
+```sql
+-- 方式二：自连接
+SELECT DISTINCT e1.employee_id,e1.last_name,e1.job_id,e1.department_id
+FROM employees e1 JOIN employees e2
+WHERE e1.employee_id = e2.manager_id;
+```
+```sql
+-- 方式三：
+SELECT employee_id,last_name,job_id,department_id
+FROM employees
+WHERE employee_id IN (
+    SELECT DISTINCT manager_id
+    FROM employees);
+```
+题目：查询departments表中，不存在于employees表中的部门的department_id和department_name
+![img_137.png](img_137.png)
+![img_138.png](img_138.png)
+
+#### 11.4.3 相关更新
+```sql
+UPDATE table1 alias1
+SET column = (SELECT expression
+                FROM table2 alias2
+                WHERE alias1.column = alias2.column);
+```
+使用相关子查询依据一个表中的数据更新另一个表的数据。
+![img_139.png](img_139.png)
+
+#### 11.4.4 相关删除
+![img_140.png](img_140.png)
+![img_141.png](img_141.png)
