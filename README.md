@@ -600,3 +600,62 @@ SELECT last_name, job_id, salary,
 FROM employees;
 ```
 ![img_93.png](img_93.png)
+
+### 2.聚合函数
+#### 2.1 聚合函数介绍
+![img_94.png](img_94.png)
+![img_95.png](img_95.png)
+聚合函数不能嵌套调用。比如不能出现类似“AVG(SUM(字段名称))”形式的调用。
+##### 2.1.1 AVG和SUM函数
+可以对**数值型数据**使用AVG 和 SUM 函数。
+```sql
+SELECT AVG(salary), MAX(salary), MIN(salary), SUM(salary)
+FROM employees
+WHERE job_id LIKE '%REP%';
+```
+![img_96.png](img_96.png)
+
+##### 2.1.2 MIN和MAX函数
+![img_97.png](img_97.png)
+
+##### 2.1.3 COUNT函数
+![img_98.png](img_98.png)
+
+#### 2.2 GROUP BY
+##### 2.2.1 基本使用
+![img_99.png](img_99.png)
+```sql
+SELECT department_id, AVG(salary)
+FROM employees
+GROUP BY department_id ;
+```
+![img_101.png](img_101.png)
+##### 2.2.2 使用多个列分组
+![img_102.png](img_102.png)
+```sql
+SELECT department_id dept_id, job_id, SUM(salary)
+FROM employees
+GROUP BY department_id, job_id;
+```
+![img_103.png](img_103.png)
+
+##### 2.2.3 GROUP BY中使用WITH ROLLUP
+![img_104.png](img_104.png)
+
+#### 2.3 HAVING
+##### 2.3.1 基本使用
+![img_105.png](img_105.png)
+![img_106.png](img_106.png)
+![img_107.png](img_107.png)
+```sql
+SELECT department_id, MAX(salary)
+FROM employees
+GROUP BY department_id
+HAVING MAX(salary)>10000 ;
+```
+![img_108.png](img_108.png)
+![img_109.png](img_109.png)
+
+##### 2.3.2 WHERE和HAVING的对比
+![img_110.png](img_110.png)
+![img_111.png](img_111.png)
