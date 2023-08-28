@@ -1152,6 +1152,188 @@ ORDER BY price DESC LIMIT 0,1;
 SELECT *
 FROM books
 ORDER BY CHAR_LENGTH(REPLACE(`name`,' ','')) DESC LIMIT 0,1;
+```
+## 13.约束
+### 13.1 非空约束
+![img_172.png](img_172.png)
+![img_173.png](img_173.png)
+删除非空约束
+![img_174.png](img_174.png)
 
+### 13.2 唯一性约束
+关键字： UNIQUE
+
+特点
+![img_175.png](img_175.png)
+#### 13.2.1 添加唯一约束
+![img_176.png](img_176.png)
+![img_177.png](img_177.png)
+![img_178.png](img_178.png)
+
+#### 13.2.2 关于复合唯一约束
+```sql
+create table 表名称(
+    字段名 数据类型,
+    字段名 数据类型,
+    字段名 数据类型,
+    unique key(字段列表) #字段列表中写的是多个字段名，多个字段名用逗号分隔，表示那么是复合唯一，即多
+    个字段的组合是唯一的
+);
+```
+```sql
+#学生表
+create table student(
+    sid int, #学号
+    sname varchar(20), #姓名
+    tel char(11) unique key, #电话
+    cardid char(18) unique key #身份证号
+);
+#课程表
+create table course(
+    cid int, #课程编号
+    cname varchar(20) #课程名称
+);
+#选课表
+create table student_course(
+    id int,
+    sid int,
+    cid int,
+    score int,
+    unique key(sid,cid) #复合唯一
+);
+```
+```sql
+insert into student values(1,'张三','13710011002','101223199012015623');#成功
+insert into student values(2,'李四','13710011003','101223199012015624');#成功
+insert into course values(1001,'Java'),(1002,'MySQL');#成功
+```
+### 13.3 PRIMARY KEY 约束
+#### 13.3.1 添加主键约束
+##### 13.3.1.1 建表时指定主键约束
+```sql
+create table 表名称(
+    字段名 数据类型 primary key, #列级模式
+    字段名 数据类型,
+    字段名 数据类型
+);
+create table 表名称(
+    字段名 数据类型,
+    字段名 数据类型,
+    字段名 数据类型,
+    [constraint 约束名] primary key(字段名) #表级模式
+);
+```
+![img_179.png](img_179.png)
+![img_180.png](img_180.png)
+
+##### 13.3.1.2 建表后增加主键约束
+```sql
+ALTER TABLE 表名称 ADD PRIMARY KEY(字段列表); -- 字段列表可以是一个字段，也可以是多个字段，如果是多个字段的话，是复合主键
+```
+![img_181.png](img_181.png)
+#### 13.3.2 复合主键
+```sql
+create table 表名称(
+    字段名 数据类型,
+    字段名 数据类型,
+    字段名 数据类型,
+    primary key(字段名1,字段名2) -- 表示字段1和字段2的组合是唯一的，也可以有更多个字段
+);
+```
+```sql
+-- 学生表
+create table student(
+    sid int primary key, -- 学号
+    sname varchar(20) -- 学生姓名
+);
+-- 课程表
+create table course(
+    cid int primary key, -- 课程编号
+    cname varchar(20) -- 课程名称
+);
+-- 选课表
+create table student_course(
+    sid int,
+    cid int,
+    score int,
+    primary key(sid,cid) -- 复合主键
+);
+```
+#### 13.3.3 删除主键约束
+![img_182.png](img_182.png)
+
+### 13.4 自增列：AUTO_INCREMENT
+#### 13.4.1 作用
+某个字段的值自增
+#### 13.4.2 关键字
+auto_increment
+#### 13.4.3 特点和要求
+![img_184.png](img_184.png)
+#### 13.4.4 如何指定自增约束
+![img_185.png](img_185.png)
+```sql
+create table employee(
+    eid int primary key auto_increment,
+    ename varchar(20)
+);
+```
+![img_186.png](img_186.png)
+#### 13.4.5 如何删除自增约束
+![img_187.png](img_187.png)
+
+### 13.5 FOREIGN KEY 约束
+![img_188.png](img_188.png)
+![img_189.png](img_189.png)
+![img_190.png](img_190.png)
+![img_191.png](img_191.png)
+
+### 13.6 CHECK约束
+#### 13.6.1 作用
+检查某个字段的值是否符号xx要求，一般指的是值的范围
+#### 13.6.2 关键字
+CHECK
+
+```sql
+create table employee(
+    eid int primary key,
+    ename varchar(5),
+    gender char check ('男' or '女')
+);
+```
+```sql
+insert into employee values(1,'张三','妖');
+```
+```sql
+CREATE TABLE temp(
+    id INT AUTO_INCREMENT,
+    NAME VARCHAR(20),
+    age INT CHECK(age > 20),
+    PRIMARY KEY(id)
+);
+```
+```sql
+age tinyint check(age >20) 或 sex char(2) check(sex in('男','女'))
 ```
 
+### 13.7 DEFAULT约束
+#### 13.7.1 作用
+给某个字段/某列指定默认值，一旦设置默认值，在插入数据时，如果此字段没有显式赋值，则赋值为默认值。
+#### 13.7.2 关键字
+DEFAULE
+#### 13.7.3 如何给字段加默认值
+```sql
+create table 表名称(
+    字段名 数据类型 primary key,
+    字段名 数据类型 unique key not null,
+    字段名 数据类型 unique key,
+    字段名 数据类型 not null default 默认值,
+);
+
+create table 表名称(
+     字段名 数据类型 default 默认值 ,
+     字段名 数据类型 not null default 默认值,
+     字段名 数据类型 not null default 默认值,
+     primary key(字段名),
+     unique key(字段名)
+);
+```
