@@ -1337,3 +1337,79 @@ create table 表名称(
      unique key(字段名)
 );
 ```
+![img_192.png](img_192.png)
+
+## 14.视图
+### 14.1 视图的理解
+![img_193.png](img_193.png)
+![img_194.png](img_194.png)
+
+### 14.2 创建视图
+![img_195.png](img_195.png)
+#### 14.2.1 创建单表视图
+![img_196.png](img_196.png)
+![img_197.png](img_197.png)
+
+#### 14.2.2 创建多表联合视图
+```sql
+CREATE VIEW empview
+AS
+SELECT employee_id emp_id,last_name NAME,department_name
+FROM employees e,departments d
+WHERE e.department_id = d.department_id;
+```
+#### 14.2.3 基于视图创建视图
+![img_198.png](img_198.png)
+
+### 14.3 查看视图
+![img_199.png](img_199.png)
+
+## 15.触发器
+![img_200.png](img_200.png)
+### 15.1 触发器概述
+![img_201.png](img_201.png)
+### 15.2 触发器创建
+![img_202.png](img_202.png)
+```sql
+-- 创建数据表
+CREATE TABLE test_trigger (
+id INT PRIMARY KEY AUTO_INCREMENT,
+t_note VARCHAR(30)
+);
+CREATE TABLE test_trigger_log (
+id INT PRIMARY KEY AUTO_INCREMENT,
+t_log VARCHAR(30)
+);
+```
+创建触发器：创建名称为before_insert的触发器，向test_trigger数据表插入数据之前，向test_trigger_log数据表中插入before_insert的日志信息。
+```sql
+DELIMITER //
+CREATE TRIGGER before_insert
+BEFORE INSERT ON test_trigger
+FOR EACH ROW
+BEGIN
+    INSERT INTO test_trigger_log (t_log)
+    VALUES('before_insert');
+END //
+DELIMITER ;   
+```
+向test_trigger数据表中插入数据
+```sql
+INSERT INTO test_trigger (t_note) VALUES ('测试 BEFORE INSERT 触发器');
+```
+![img_203.png](img_203.png)
+
+### 15.3 查看、删除触发器
+#### 15.3.1 查看触发器
+![img_204.png](img_204.png)
+#### 15.3.2 删除触发器
+![img_205.png](img_205.png)
+
+
+
+
+
+
+
+
+
