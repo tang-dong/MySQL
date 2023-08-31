@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MySQL.iml" filepath="$PROJECT_DIR$/MySQL.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jdbc-base-statement/jdbc-base-statement.iml" filepath="$PROJECT_DIR$/jdbc-base-statement/jdbc-base-statement.iml" />
     </modules>
   </component>
 </project>
