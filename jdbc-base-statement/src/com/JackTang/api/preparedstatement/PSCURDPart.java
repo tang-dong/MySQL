@@ -133,25 +133,36 @@ public class PSCURDPart {
      */
     @Test
     public void testQueryMap() throws Exception {
+
+        //1.注册驱动
         Class.forName("com.mysql.cj.jdbc.Driver");
 
+        //2.获取连接
         Connection conn = DriverManager.getConnection("jdbc:mysql:///atguigu?user=root&PASSWORD=hyx520");
 
+        //3.编写SQL
         String sql = "select id,account,PASSWORD,nickname from t_user;";
 
+        //4.创建ps
         PreparedStatement ps = conn.prepareStatement(sql);
 
+        //5.获取执行后返回的结果
         ResultSet resultSet = ps.executeQuery();
 
         //创建一个集合
         List<Map> mapList = new ArrayList<>();
 
-        //获取列表信息
+        //获取列表信息，包括列名，列的类型等
         ResultSetMetaData metaData = resultSet.getMetaData();
+        //获取了结果集 metaData 的列数
         int columnCount = metaData.getColumnCount();
         while (resultSet.next()) {
             Map map =new HashMap();
+            // 注意： 要从 1 开始，并且小于等于总列数
             for (int i = 1; i <= columnCount; i++) {
+                // getColumnLabel()获取列的标签，getObject()获取列的值
+                // 其中getColumnLabel()会获取别名，如果没有别名才会获取列的名称
+                // 不要使用 getColumnName() ：只会获取列的名称
                 map.put(metaData.getColumnLabel(i),resultSet.getObject(i));
             }
             mapList.add(map);
