@@ -112,7 +112,7 @@ drop table语句不能回滚。
 ![img_146.png](img_146.png)
 ![img_147.png](img_147.png)
 #### 2.6.2 修改一个列
-![img_148.png](img_148.png)
+![img_148_1.png](img_148_1.png)
 #### 2.6.3 重命名一个列
 ![img_149.png](img_149.png)
 #### 2.6.4 删除一个列
@@ -783,7 +783,7 @@ WHERE salary > (
     WHERE last_name = 'Abel'
 );
 ```
-![img_116.png](img_116.png)
+![img_116_1.png](img_116_1.png)
 #### 11.1.2 子查询的基本使用
 ![img_117.png](img_117.png)
 #### 11.1.3 子查询的分类
@@ -872,7 +872,7 @@ FROM employees;
 
 ### 11.3 多行子查询
 #### 11.3.1 多行比较操作符
-![img_129.png](img_129.png)
+![img_129_1.png](img_129_1.png)
 ![img_130.png](img_130.png)
 题目：返回其它job_id中比job_id为‘IT_PROG’部门所有工资都低的员工的员工号、姓名、job_id以及salary
 ![img_131.png](img_131.png)
@@ -1168,7 +1168,7 @@ ORDER BY CHAR_LENGTH(REPLACE(`name`,' ','')) DESC LIMIT 0,1;
 #### 13.2.1 添加唯一约束
 ![img_176.png](img_176.png)
 ![img_177.png](img_177.png)
-![img_178.png](img_178.png)
+![img_178_1.png](img_178_1.png)
 
 #### 13.2.2 关于复合唯一约束
 ```sql
@@ -1270,7 +1270,7 @@ auto_increment
 #### 13.4.3 特点和要求
 ![img_184.png](img_184.png)
 #### 13.4.4 如何指定自增约束
-![img_185.png](img_185.png)
+![img_185_1.png](img_185_1.png)
 ```sql
 create table employee(
     eid int primary key auto_increment,
@@ -1359,7 +1359,7 @@ FROM employees e,departments d
 WHERE e.department_id = d.department_id;
 ```
 #### 14.2.3 基于视图创建视图
-![img_198.png](img_198.png)
+![img_198_1.png](img_198_1.png)
 
 ### 14.3 查看视图
 ![img_199.png](img_199.png)
@@ -1369,7 +1369,7 @@ WHERE e.department_id = d.department_id;
 ### 15.1 触发器概述
 ![img_201.png](img_201.png)
 ### 15.2 触发器创建
-![img_202.png](img_202.png)
+![img_202_1.png](img_202_1.png)
 ```sql
 -- 创建数据表
 CREATE TABLE test_trigger (
